@@ -1,0 +1,11 @@
+{
+  "name": "xy-scope",
+  "version": "1.0.0",
+  "description": "XY Musical Oscilloscope CRT with Web Audio stereo synthesis, phosphor persistence scope, and stereo WAV export",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/shapes.js && node --check src/synth.js && node --check src/scope_renderer.js && node --check src/audio_engine.js && node --check src/main.js && node --check tests/xy_scope.test.js",
+    "test": "node --test tests/xy_scope.test.js"
+  },
+  "license": "MIT"
+}

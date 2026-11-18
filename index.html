@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XY-SCOPE // Musical Vector Oscilloscope CRT</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="chassis">
+      <header class="top-bar">
+        <div class="brand">
+          <span class="model-tag">TEK-2465V</span>
+          <h1>XY Musical Oscilloscope</h1>
+          <span class="subtitle">Stereo Audio Vector Synthesis &amp; Phosphor CRT</span>
+        </div>
+
+        <div class="top-actions">
+          <div id="signal-badge" class="badge badge-preview">PREVIEW (MUTED)</div>
+          <button id="btn-audio" class="btn btn-primary" type="button">
+            Play Audio
+          </button>
+          <button id="btn-export-wav" class="btn btn-secondary" type="button">
+            Export Stereo .wav
+          </button>
+        </div>
+      </header>
+
+      <div id="error-banner" class="error-banner" hidden></div>
+
+      <main class="workspace">
+        <section class="crt-bay">
+          <div class="crt-bezel">
+            <div class="crt-screen-wrap" id="crt-wrap">
+              <canvas id="crt-phosphor" aria-label="XY Oscilloscope Phosphor Display"></canvas>
+              <canvas id="crt-graticule"></canvas>
+              <div id="draw-hint" class="draw-hint" hidden>
+                FREEHAND DRAW PAD ACTIVE — Drag inside screen to draw loop
+              </div>
+            </div>
+          </div>
+
+          <footer class="telemetry-bar">
+            <div class="metric">
+              <span class="metric-label">SOURCE</span>
+              <span id="telem-source" class="metric-val">3D Cube</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">PITCH</span>
+              <span id="telem-freq" class="metric-val">82.4 Hz</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">RATE</span>
+              <span id="telem-rate" class="metric-val">44.1 kHz</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">X (L-RMS)</span>
+              <span id="telem-rms-l" class="metric-val">0.00</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Y (R-RMS)</span>
+              <span id="telem-rms-r" class="metric-val">0.00</span>
+            </div>
+          </footer>
+        </section>
+
+        <aside class="control-deck">
+          <section class="panel-group">
+            <h2 class="panel-title">Vector Generator</h2>
+            <div class="shape-grid" id="shape-buttons">
+              <button type="button" class="shape-btn active" data-shape="cube">3D Cube</button>
+              <button type="button" class="shape-btn" data-shape="pyramid">3D Pyramid</button>
+              <button type="button" class="shape-btn" data-shape="torus-knot">Torus Knot</button>
+              <button type="button" class="shape-btn" data-shape="lissajous">Lissajous</button>
+              <button type="button" class="shape-btn" data-shape="text">Vector Text</button>
+              <button type="button" class="shape-btn" data-shape="freehand">Freehand Pad</button>
+            </div>
+          </section>
+
+          <section class="panel-group" id="params-3d">
+            <h2 class="panel-title">3D Rotation &amp; Knot</h2>
+            <label class="control-row">
+              <span>Spin Rate <strong id="val-spin">1.0x</strong></span>
+              <input id="ctrl-spin" type="range" min="0" max="3" step="0.05" value="1.0" />
+            </label>
+            <div id="torus-controls" class="sub-grid" hidden>
+              <label class="control-row">
+                <span>Knot P <strong id="val-torus-p">2</strong></span>
+                <input id="ctrl-torus-p" type="range" min="1" max="7" step="1" value="2" />
+              </label>
+              <label class="control-row">
+                <span>Knot Q <strong id="val-torus-q">3</strong></span>
+                <input id="ctrl-torus-q" type="range" min="1" max="9" step="1" value="3" />
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-group" id="params-lissajous" hidden>
+            <h2 class="panel-title">Lissajous Harmonics (fx : fy)</h2>
+            <div class="chip-row" id="lissajous-presets">
+              <button type="button" class="chip" data-fx="1" data-fy="1">1:1 Unison</button>
+              <button type="button" class="chip" data-fx="2" data-fy="1">2:1 Oct</button>
+              <button type="button" class="chip active" data-fx="3" data-fy="2">3:2 Fifth</button>
+              <button type="button" class="chip" data-fx="4" data-fy="3">4:3 Fourth</button>
+              <button type="button" class="chip" data-fx="5" data-fy="4">5:4 Maj3</button>
+            </div>
+            <div class="sub-grid">
+              <label class="control-row">
+                <span>Left fx <strong id="val-fx">3</strong></span>
+                <input id="ctrl-fx" type="range" min="1" max="9" step="1" value="3" />
+              </label>
+              <label class="control-row">
+                <span>Right fy <strong id="val-fy">2</strong></span>
+                <input id="ctrl-fy" type="range" min="1" max="9" step="1" value="2" />
+              </label>
+            </div>
+            <label class="control-row">
+              <span>Phase Drift <strong id="val-drift">0.60</strong></span>
+              <input id="ctrl-drift" type="range" min="0" max="2.5" step="0.05" value="0.6" />
+            </label>
+          </section>
+
+          <section class="panel-group" id="params-text" hidden>
+            <h2 class="panel-title">Vector Text Strokes</h2>
+            <div class="text-input-row">
+              <input
+                id="ctrl-text"
+                type="text"
+                maxlength="12"
+                value="RUST"
+                placeholder="Type text..."
+                aria-label="Vector Text"
+              />
+            </div>
+            <div class="chip-row" id="text-presets">
+              <button type="button" class="chip" data-text="RUST">RUST</button>
+              <button type="button" class="chip" data-text="XY">XY</button>
+              <button type="button" class="chip" data-text="AI">AI</button>
+              <button type="button" class="chip" data-text="SCOPE">SCOPE</button>
+            </div>
+          </section>
+
+          <section class="panel-group" id="params-freehand" hidden>
+            <h2 class="panel-title">Freehand Draw Pad</h2>
+            <p class="helper-note">Drag across the CRT screen to draw a custom stereo loop.</p>
+            <div class="chip-row">
+              <button type="button" class="chip" id="btn-freehand-clear">Clear Pad</button>
+              <button type="button" class="chip" id="btn-freehand-heart">Heart Loop</button>
+              <button type="button" class="chip" id="btn-freehand-star">Star Loop</button>
+            </div>
+          </section>
+
+          <section class="panel-group">
+            <h2 class="panel-title">Audio Synth (L = X, R = Y)</h2>
+            <label class="control-row">
+              <span>Fundamental Pitch <strong id="val-freq">82.4 Hz</strong></span>
+              <input id="ctrl-freq" type="range" min="40" max="330" step="0.5" value="82.4" />
+            </label>
+            <label class="control-row">
+              <span>Output Gain <strong id="val-gain">65%</strong></span>
+              <input id="ctrl-gain" type="range" min="0" max="1" step="0.01" value="0.65" />
+            </label>
+          </section>
+
+          <section class="panel-group">
+            <h2 class="panel-title">CRT Phosphor Optics</h2>
+            <div class="chip-row" id="phosphor-buttons">
+              <button type="button" class="chip active" data-phosphor="green">P31 Green</button>
+              <button type="button" class="chip" data-phosphor="amber">P3 Amber</button>
+              <button type="button" class="chip" data-phosphor="cyan">P11 Cyan</button>
+            </div>
+            <label class="control-row">
+              <span>Persistence <strong id="val-persist">0.78</strong></span>
+              <input id="ctrl-persist" type="range" min="0.30" max="0.95" step="0.01" value="0.78" />
+            </label>
+            <label class="control-row">
+              <span>Beam Focus <strong id="val-focus">1.6 px</strong></span>
+              <input id="ctrl-focus" type="range" min="0.8" max="3.2" step="0.1" value="1.6" />
+            </label>
+            <label class="control-row">
+              <span>Intensity <strong id="val-intensity">1.05</strong></span>
+              <input id="ctrl-intensity" type="range" min="0.4" max="1.8" step="0.05" value="1.05" />
+            </label>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
